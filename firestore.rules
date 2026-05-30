@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /reservations/{reservationId} {
+      // Needed for slot availability + duplicate phone checks
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.keys().hasAll([
+          'name', 'email', 'phone', 'date', 'time', 'guests'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.email is string
+        && request.resource.data.phone is string
+        && request.resource.data.date is string
+        && request.resource.data.time is string
+        && request.resource.data.guests is int
+        && request.resource.data.guests > 0
+        && request.resource.data.guests <= 14;
+
+      allow update, delete: if false;
+    }
+  }
+}

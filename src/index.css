@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --color-charcoal: #0B0B0B;
+  --color-smoke: #1A1A1A;
+  --color-mahogany: #3B1F1F;
+  --color-ember: #C2410C;
+  --color-flame: #B91C1C;
+  --color-gold: #F59E0B;
+}
+@keyframes slowZoom {
+
+  0%{
+    transform: scale(1.05);
+  }
+
+  100%{
+    transform: scale(1.2);
+  }
+
+  
+}
+@keyframes heroZoom {
+  0%, 100% { transform: scale(1.1); }
+  50% { transform: scale(1.3); } /* Change 1.3 to go even deeper */
+}
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fade 0.4s ease-in-out;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE + Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.animate-fade {
+  animation: fade 0.4s ease-in-out;
+}
+.fade-up {
+  animation: fadeUp 1s ease forwards;
+}
+
+.nav-link {
+  position: relative;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  left: 0;
+  bottom: -6px;
+  background: #f59e0b;
+  transition: width 0.35s ease;
+}
+
+.nav-link:hover {
+  color: #f59e0b;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+:root{
+  --bg-main: #1A1614;
+  --primary-red: #8B0000;
+  --text-main: #E3D5CA;
+  --border-soft: #3D3530;
+  --menu-sidebar-width: 11rem;
+}
+
+body{
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Playfair Display", serif;
+}
+
+button{
+  background-color: var(--primary-red);
+  color: var(--text-main);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover{
+  background-color: #A52A2A;
+}
+
+/* Menu page CTAs — avoid global red button styles */
+button.menu-cta {
+  background-color: #f59e0b;
+  color: #111827;
+  border: none;
+  border-radius: 9999px;
+}
+
+button.menu-cta:hover {
+  background-color: #fbbf24;
+}
