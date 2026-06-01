@@ -386,32 +386,54 @@ useEffect(() => {
 
           {/* ❌ REMOVED BACKGROUND FROM HERE */}
 
-          {/* 🔥 TITLE (attached to the wood section, centered) */}
-          <div className="h-screen flex items-center justify-center">
-            <h1 className="text-white text-6xl md:text-8xl text-center font-[Cinzel] font-semibold">
-              {currentCategory.category}
-            </h1>
-          </div>
-
-          {/* 🔥 IMAGE (STICKY) */}
-          <div className="relative h-[200vh] z-20">
-            <div className="sticky top-20 h-[80vh] flex items-center justify-center">
-              {currentCategory.image && (
-                <img
-                  src={currentCategory.image}
-                  alt={currentCategory.category}
-                  style={{
-                    filter: `blur(${blur}px)`,
-                    transition: "filter 0.2s ease-out",
-                  }}
-                  className="w-[90%] max-w-6xl rounded-2xl shadow-2xl object-cover"
-                />
-              )}
+          {/* 🔥 TITLE ON WOOD → IMAGE SCROLLS OVER → MENU SCROLLS OVER IMAGE */}
+          <div
+            className={`relative ${
+              currentCategory.image ? "h-[220vh]" : "h-screen"
+            }`}
+          >
+            {/* Category title — pinned on wood behind the image */}
+            <div
+              className="sticky z-10 flex items-center justify-center pointer-events-none"
+              style={{
+                top: "var(--navbar-height)",
+                height: "calc(100vh - var(--navbar-height))",
+              }}
+            >
+              <h1 className="text-white text-6xl md:text-8xl text-center font-[Cinzel] font-semibold">
+                {currentCategory.category}
+              </h1>
             </div>
+
+            {currentCategory.image && (
+              <div className="relative z-20 -mt-[100vh] h-[180vh]">
+                <div
+                  className="sticky flex items-center justify-center px-4"
+                  style={{
+                    top: "calc(var(--navbar-height) + 1rem)",
+                    height: "min(75vh, calc(100vh - var(--navbar-height) - 2rem))",
+                  }}
+                >
+                  <img
+                    src={currentCategory.image}
+                    alt={currentCategory.category}
+                    style={{
+                      filter: `blur(${blur}px)`,
+                      transition: "filter 0.2s ease-out",
+                    }}
+                    className="w-[90%] max-w-6xl rounded-2xl shadow-2xl object-cover"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 🔥 MENU OVER IMAGE */}
-<div className="relative z-30 -mt-[80vh] min-h-screen">
+<div
+  className={`relative z-30 min-h-screen ${
+    currentCategory.image ? "-mt-[80vh]" : ""
+  }`}
+>
 
               <div className="relative  backdrop-blur-xl rounded-t-3xl p-12 shadow-[0_-20px_40px_rgba(0,0,0,1)] overflow-hidden min-h-screen w-full"
                 style={{
