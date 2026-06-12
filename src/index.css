@@ -101,12 +101,20 @@
   --text-main: #E3D5CA;
   --border-soft: #3D3530;
   --menu-sidebar-width: 11rem;
+
+  /* Native form controls (date picker, select, scrollbars) render dark */
+  color-scheme: dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body{
   background-color: var(--bg-main);
   color: var(--text-main);
   font-family: "Playfair Display", serif;
+  overflow-x: hidden;
 }
 
 button{
@@ -132,4 +140,39 @@ button.menu-cta {
 
 button.menu-cta:hover {
   background-color: #fbbf24;
+}
+
+/* ── Mobile form polish ──────────────────────────────────────────────── */
+
+/* Dark dropdown options on browsers that allow styling them */
+select option {
+  background-color: #1a1614;
+  color: #e3d5ca;
+}
+
+/* Prevent iOS Safari from zooming into focused inputs (<16px triggers zoom) */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Make the WebKit date-picker icon visible on the dark background */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(0.4) saturate(3) hue-rotate(-10deg);
+  cursor: pointer;
+}
+
+/* Respect reduced-motion preferences site-wide */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

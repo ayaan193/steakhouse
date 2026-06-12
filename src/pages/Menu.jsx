@@ -15,7 +15,6 @@ const menu = [
   {
     category: "Salads",
     image: salad,
-    color: "#9aff6e",
     items: [
       { name: "Tossed Salad", price: 170 },
       { name: "Potato Salad", price: 200 },
@@ -29,7 +28,6 @@ const menu = [
   {
     category: "Starters",
     image: gbread,
-    color: "#ff6767",
     items: [
       { name: "Prawns with Sauce", price: 500 },
       { name: "Fish Sticks", price: 500 },
@@ -131,7 +129,6 @@ const menu = [
   },
   {
     category: "Pasta",
-    color: "#f6b26b",
     items: [
       { name: "Chicken Pasta", price: 400 },
       { name: "Meat Pasta", price: 390 },
@@ -144,7 +141,6 @@ const menu = [
   {
     category: "Steaks",
     image: steak,
-    color: "#e06666",
     items: [
       { name: "Wiener Schnitzel & Fries", price: 460 },
       { name: "Beef Parmigiana", price: 500 },
@@ -243,7 +239,7 @@ function CategoryRail({ active, onSelect, variant = "hero" }) {
   const isHero = variant === "hero";
   return (
     <div
-      className="flex-1 flex overflow-x-auto no-scrollbar"
+      className="flex-1 min-w-0 w-full flex overflow-x-auto no-scrollbar"
       style={{
         maskImage:
           "linear-gradient(90deg, transparent, black 4%, black 96%, transparent)",
@@ -260,17 +256,17 @@ function CategoryRail({ active, onSelect, variant = "hero" }) {
             onClick={() => onSelect(section.category)}
             className={`
               flex-none font-[Cinzel] uppercase whitespace-nowrap relative
+              !bg-transparent !rounded-none
               transition-colors duration-200 focus-visible:outline-none
               focus-visible:ring-2 focus-visible:ring-[#f0a81e]
               ${isHero
-                ? "text-xs tracking-[0.16em] px-5 py-4"
-                : "text-[0.65rem] tracking-[0.16em] px-4 py-3.5"}
+                ? "text-[0.68rem] md:text-xs tracking-[0.14em] md:tracking-[0.16em] px-4 md:px-5 py-4"
+                : "text-[0.62rem] md:text-[0.65rem] tracking-[0.14em] md:tracking-[0.16em] px-3.5 md:px-4 py-3.5"}
               ${isActive
-                ? "text-[#f0a81e]"
-                : "text-white/60 hover:text-white"}
+                ? "!text-[#f0a81e]"
+                : "!text-white/60 hover:!text-white"}
             `}
           >
-            {/* Amber bar — top for hero rail, bottom for sticky nav */}
             {isActive && (
               <span
                 className={`absolute ${isHero ? "top-0" : "bottom-0"} left-4 right-4 h-0.5 bg-[#f0a81e]`}
@@ -294,6 +290,8 @@ export default function Menu() {
   const menuContentRef = useRef(null);
 
   const currentCategory = menu.find((m) => m.category === active);
+  const activeIndex = menu.findIndex((m) => m.category === active);
+  const nextCategory = menu[(activeIndex + 1) % menu.length];
 
   // ── Scroll into menu content when category is selected ──
   const scrollToMenu = () =>
@@ -301,7 +299,6 @@ export default function Menu() {
 
   const selectCategory = (category) => {
     setActive(category);
-    // Small delay so state updates before scrollIntoView reads layout
     setTimeout(scrollToMenu, 50);
   };
 
@@ -342,8 +339,8 @@ export default function Menu() {
         style={{ top: "var(--navbar-height, 64px)" }}
         aria-hidden={!showStickyNav}
       >
-        <div className="bg-[#15110d]/95 backdrop-blur-md border-b border-white/10 flex items-center">
-          <span className="flex-none font-[Cinzel] text-white/40 text-[0.65rem] tracking-[0.38em] uppercase px-5 py-3.5 border-r border-white/10 whitespace-nowrap select-none">
+        <div className="bg-[#15110d]/95 backdrop-blur-md border-b border-white/10 flex items-center max-w-full overflow-hidden">
+          <span className="hidden sm:block flex-none font-[Cinzel] text-white/40 text-[0.65rem] tracking-[0.38em] uppercase px-5 py-3.5 border-r border-white/10 whitespace-nowrap select-none">
             SECTIONS
           </span>
           <CategoryRail active={active} onSelect={selectCategory} variant="sticky" />
@@ -351,7 +348,7 @@ export default function Menu() {
       </div>
 
       {/* ── Cinematic hero ───────────────────────────────────────────────── */}
-      <section ref={heroRef} className="relative h-screen overflow-hidden">
+      <section ref={heroRef} className="relative h-[100svh] overflow-hidden">
 
         {/* Video */}
         <video
@@ -364,13 +361,12 @@ export default function Menu() {
           <source src={menuback} type="video/mp4" />
         </video>
 
-        {/* Scrim stack — top gradient, full vignette, bottom gradient */}
+        {/* Scrim stack */}
         <div className="absolute inset-0 bg-black/20 pointer-events-none" />
         <div
           className="absolute inset-x-0 top-0 h-52 pointer-events-none"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(8,6,4,0.65), transparent)",
+            background: "linear-gradient(180deg, rgba(8,6,4,0.65), transparent)",
           }}
         />
         <div
@@ -389,21 +385,19 @@ export default function Menu() {
           }}
         />
 
-        {/* Hero text — nudged slightly above center so rail doesn't cover it */}
+        {/* Hero text */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 px-6"
           style={{ transform: "translateY(-5vh)" }}
         >
-          {/* Eyebrow */}
-          <p className="font-[Cinzel] text-[#f0a81e] text-xs tracking-[0.5em] uppercase mb-6 select-none">
+          <p className="font-[Cinzel] text-[#f0a81e] text-[0.65rem] md:text-xs tracking-[0.5em] uppercase mb-6 select-none">
             SINCE 1965
           </p>
 
-          {/* Title */}
           <h1
             className="font-[Cinzel] font-bold text-white leading-none"
             style={{
-              fontSize: "clamp(3.5rem, 10vw, 8rem)",
+              fontSize: "clamp(2.8rem, 10vw, 8rem)",
               letterSpacing: "0.02em",
               textShadow: "0 4px 36px rgba(0,0,0,0.6)",
             }}
@@ -411,23 +405,21 @@ export default function Menu() {
             OUR MENU
           </h1>
 
-          {/* Subtitle flanked by hairlines */}
-          <div className="flex items-center gap-5 mt-5">
-            <span className="block w-12 md:w-20 h-px bg-white/40" />
-            <span className="font-[Cinzel] text-white/85 text-xs md:text-sm tracking-[0.38em] uppercase">
+          <div className="flex items-center gap-4 md:gap-5 mt-5">
+            <span className="block w-10 md:w-20 h-px bg-white/40" />
+            <span className="font-[Cinzel] text-white/85 text-[0.65rem] md:text-sm tracking-[0.3em] md:tracking-[0.38em] uppercase whitespace-nowrap">
               Taste the Passion
             </span>
-            <span className="block w-12 md:w-20 h-px bg-white/40" />
+            <span className="block w-10 md:w-20 h-px bg-white/40" />
           </div>
 
-          {/* CTA */}
           <button
             type="button"
             onClick={() => selectCategory(menu[0].category)}
             className="
-              mt-10 font-[Cinzel] font-semibold text-sm tracking-wider
-              text-[#241400] bg-[#f0a81e] rounded-full px-10 py-3.5
-              transition-all duration-200 hover:bg-[#d28c0d] hover:-translate-y-0.5
+              menu-cta mt-10 font-[Cinzel] font-semibold text-sm tracking-wider
+              !text-[#241400] !bg-[#f0a81e] !rounded-full px-9 md:px-10 py-3.5
+              transition-all duration-200 hover:!bg-[#d28c0d] hover:-translate-y-0.5
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0a81e] focus-visible:ring-offset-2
             "
             style={{ boxShadow: "0 8px 26px rgba(240,168,30,0.36)" }}
@@ -437,8 +429,7 @@ export default function Menu() {
         </div>
 
         {/* Bottom category rail — overlaid on video */}
-        <div className="absolute bottom-0 inset-x-0 z-10 flex items-center border-t border-white/12">
-          {/* Blurred glass tint behind the rail */}
+        <div className="absolute bottom-0 inset-x-0 z-10 flex items-center border-t border-white/12 max-w-full overflow-hidden">
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -447,22 +438,20 @@ export default function Menu() {
                 "linear-gradient(to top, rgba(8,6,4,0.72), rgba(8,6,4,0.18))",
             }}
           />
-          {/* SECTIONS label */}
-          <span className="relative flex-none font-[Cinzel] text-white/45 text-[0.65rem] tracking-[0.38em] uppercase px-6 py-4 border-r border-white/12 whitespace-nowrap select-none z-10">
+          <span className="relative hidden sm:block flex-none font-[Cinzel] text-white/45 text-[0.65rem] tracking-[0.38em] uppercase px-6 py-4 border-r border-white/12 whitespace-nowrap select-none z-10">
             SECTIONS
           </span>
-          {/* Scrollable items */}
-          <div className="relative z-10 flex-1">
+          <div className="relative z-10 flex-1 min-w-0">
             <CategoryRail active={active} onSelect={selectCategory} variant="hero" />
           </div>
         </div>
       </section>
 
       {/* ── Menu content ─────────────────────────────────────────────────── */}
-      {/* Scroll sequence:                                                       */}
-      {/*   LAYER 1 — Wood + title (sticky z=10): stays pinned behind            */}
-      {/*   LAYER 2 — Food image (z=20, opaque bg): rises from below over L1     */}
-      {/*   LAYER 3 — Menu card (z=30, -mt-[80vh]): slides over sticky image     */}
+      {/* Scroll sequence:                                                     */}
+      {/*   LAYER 1 — Wood + title (sticky z=10): stays pinned behind          */}
+      {/*   LAYER 2 — Food image (z=20, opaque bg): rises from below over L1   */}
+      {/*   LAYER 3 — Menu card (z=30, -mt-[80vh]): slides over sticky image   */}
       <div
         ref={menuContentRef}
         className="relative"
@@ -479,19 +468,22 @@ export default function Menu() {
           }}
         >
           <div className="absolute inset-0 bg-black/55" />
-          <h1
-            className="relative z-10 text-white text-center font-[Cinzel] font-semibold px-6"
-            style={{ fontSize: "clamp(3rem, 8vw, 6rem)" }}
-          >
-            {currentCategory.category}
-          </h1>
+          <div className="relative z-10 text-center px-6">
+            <p className="font-[Cinzel] text-[#f0a81e] text-[0.65rem] md:text-xs tracking-[0.45em] uppercase mb-4">
+              {String(activeIndex + 1).padStart(2, "0")} / {String(menu.length).padStart(2, "0")}
+            </p>
+            <h1
+              className="text-white font-[Cinzel] font-semibold"
+              style={{ fontSize: "clamp(2.5rem, 8vw, 6rem)" }}
+            >
+              {currentCategory.category}
+            </h1>
+          </div>
         </div>
 
         {/* LAYER 2: Food image — enters from below, covers Layer 1, stays sticky */}
-        {/* bg-[#15110d] makes container opaque so it fully covers the wood/title  */}
-        {/* h-[200vh] gives the sticky image 100 vh of dwell time before Layer 3   */}
         <div className="relative h-[200vh] z-20 bg-[#15110d]">
-          <div className="sticky top-0 h-screen flex items-center justify-center">
+          <div className="sticky top-0 h-screen flex items-center justify-center px-4">
             {currentCategory.image ? (
               <img
                 src={currentCategory.image}
@@ -500,11 +492,11 @@ export default function Menu() {
                   filter: `blur(${blur}px)`,
                   transition: "filter 0.2s ease-out",
                 }}
-                className="w-[90%] max-w-6xl rounded-2xl shadow-2xl object-cover max-h-[80vh]"
+                className="w-full md:w-[90%] max-w-6xl rounded-2xl shadow-2xl object-cover max-h-[70vh] md:max-h-[80vh]"
               />
             ) : (
-              <div className="w-[90%] max-w-6xl h-[60vh] rounded-2xl bg-[#1e1610] flex items-center justify-center">
-                <span className="font-[Cinzel] text-white/20 text-2xl uppercase tracking-[0.3em]">
+              <div className="w-full md:w-[90%] max-w-6xl h-[50vh] md:h-[60vh] rounded-2xl bg-[#1e1610] border border-[#3D3530] flex items-center justify-center">
+                <span className="font-[Cinzel] text-white/20 text-lg md:text-2xl uppercase tracking-[0.3em] text-center px-6">
                   {currentCategory.category}
                 </span>
               </div>
@@ -515,16 +507,15 @@ export default function Menu() {
         {/* LAYER 3: Menu card — slides over the sticky food image */}
         <div className="relative z-30 -mt-[80vh] min-h-screen">
           <div
-            className="relative backdrop-blur-xl rounded-t-3xl p-12 shadow-[0_-20px_40px_rgba(0,0,0,1)] overflow-hidden min-h-screen w-full"
+            className="relative rounded-t-3xl p-6 sm:p-10 md:p-14 shadow-[0_-20px_40px_rgba(0,0,0,1)] overflow-hidden min-h-screen w-full border-t border-[#f0a81e]/25"
             style={{
-              background: `linear-gradient(135deg, ${
-                currentCategory.color || "#ff7979"
-              }, rgba(255,255,255,0.2))`,
+              background:
+                "linear-gradient(180deg, #221a13 0%, #18120d 60%, #15110d 100%)",
             }}
           >
             {/* Texture overlay */}
             <div
-              className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay z-0"
+              className="absolute inset-0 pointer-events-none opacity-10 mix-blend-overlay z-0"
               style={{
                 backgroundImage: `url(${design})`,
                 backgroundSize: "cover",
@@ -533,29 +524,59 @@ export default function Menu() {
             />
 
             {/* Content grid */}
-            <div className="relative z-10 w-full grid md:grid-cols-[280px_1fr] gap-16">
+            <div className="relative z-10 w-full max-w-6xl mx-auto grid md:grid-cols-[260px_1fr] gap-10 md:gap-16">
+
+              {/* Section header */}
               <div>
-                <h2 className="text-5xl md:text-6xl font-bold text-gray-900 font-[Cinzel] sticky top-24">
-                  {currentCategory.category}
-                </h2>
+                <div className="md:sticky md:top-28">
+                  <p className="font-[Cinzel] text-[#f0a81e] text-[0.65rem] tracking-[0.4em] uppercase mb-3">
+                    Section {String(activeIndex + 1).padStart(2, "0")}
+                  </p>
+                  <h2 className="text-4xl md:text-5xl font-bold text-white font-[Cinzel] leading-tight">
+                    {currentCategory.category}
+                  </h2>
+                  <span className="block w-14 h-0.5 bg-[#f0a81e] mt-5" />
+                </div>
               </div>
-              <div className="grid md:grid-cols-2 gap-x-16 gap-y-12 border-l border-black/50 pl-10">
+
+              {/* Items */}
+              <div className="grid sm:grid-cols-2 gap-x-10 lg:gap-x-16 gap-y-7 md:gap-y-9 md:border-l md:border-[#f0a81e]/20 md:pl-10">
                 {currentCategory.items.map((item, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <p className="text-sm text-gray-800 font-medium tracking-wide">
-                      ₹{item.price}
-                    </p>
-                    <h3 className="text-xl md:text-2xl font-semibold text-gray-900 leading-snug">
-                      {item.name}
-                    </h3>
+                  <div key={i}>
+                    <div className="flex items-baseline gap-3">
+                      <h3 className="text-base md:text-lg font-semibold text-[#E3D5CA] leading-snug">
+                        {item.name}
+                      </h3>
+                      <span
+                        className="flex-1 border-b border-dotted border-[#E3D5CA]/25"
+                        aria-hidden="true"
+                      />
+                      <p className="font-[Cinzel] text-[#f0a81e] text-sm md:text-base whitespace-nowrap">
+                        ₹{item.price}
+                      </p>
+                    </div>
                     {item.desc && (
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-[#E3D5CA]/60 leading-relaxed mt-1.5">
                         {item.desc}
                       </p>
                     )}
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Next section CTA */}
+            <div className="relative z-10 max-w-6xl mx-auto mt-16 md:mt-20 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-5">
+              <p className="font-[Cinzel] text-white/50 text-[0.65rem] tracking-[0.32em] uppercase">
+                Continue Exploring
+              </p>
+              <button
+                type="button"
+                onClick={() => selectCategory(nextCategory.category)}
+                className="menu-cta font-[Cinzel] font-semibold text-sm tracking-wider !rounded-full px-8 py-3 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0a81e]"
+              >
+                Next: {nextCategory.category} →
+              </button>
             </div>
           </div>
         </div>

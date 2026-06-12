@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { db } from "../firebase";
-import TimeAvailability from "../TimeAvailability";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -11,6 +10,11 @@ import {
   where,
   getDocs
 } from "firebase/firestore";
+
+const inputClass =
+  "w-full p-3.5 rounded-lg bg-[#15110d] border border-[#3D3530] text-[#E3D5CA] placeholder-[#E3D5CA]/40 focus:outline-none focus:border-[#f0a81e]/70 focus:ring-1 focus:ring-[#f0a81e]/50 transition";
+
+const steps = ["Contact", "Verify", "Reserve"];
 
 export default function Reservations() {
 
@@ -65,10 +69,10 @@ export default function Reservations() {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
-  /* ---------------- 1 QUERY SLOT AVAILABILITY ---------------- */
+  /* ---------------- QUERY SLOT AVAILABILITY ---------------- */
 
   const checkAvailability = async (date) => {
-    
+
     const q = query(
       collection(db, "reservations"),
       where("date", "==", date)
@@ -77,7 +81,6 @@ export default function Reservations() {
     const snapshot = await getDocs(q);
 
     const counts = {};
-
     times.forEach((t) => {
       counts[t] = 0;
     });
@@ -90,17 +93,13 @@ export default function Reservations() {
     });
 
     const statusMap = {};
-
     times.forEach((time) => {
-
       const count = counts[time];
-
       if (count >= 10) statusMap[time] = "full";
       else if (count >= 5) statusMap[time] = "limited";
       else statusMap[time] = "available";
-
     });
-    console.log(statusMap);
+
     setSlotStatus(statusMap);
   };
 
@@ -122,14 +121,11 @@ export default function Reservations() {
     setGeneratedOTP(newOTP);
 
     try {
-
       await fetch(
         "https://us-central1-the-only-place-ea5f9.cloudfunctions.net/sendOTPEmail",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: form.email,
             otp: newOTP,
@@ -140,18 +136,17 @@ export default function Reservations() {
 
       setStep(2);
       setMessage("OTP sent to your email");
-
     } catch (err) {
       console.error(err);
       setMessage("Failed to send OTP");
     } finally {
-      setSendingOTP(false); // unlock button
+      setSendingOTP(false);
     }
-  }
+  };
+
   /* ---------------- VERIFY OTP ---------------- */
 
   const verifyOTP = () => {
-
     if (otp === generatedOTP) {
       setVerified(true);
       setStep(3);
@@ -159,7 +154,6 @@ export default function Reservations() {
     } else {
       setMessage("Invalid OTP");
     }
-
   };
 
   /* ---------------- RESERVATION SUBMIT ---------------- */
@@ -171,29 +165,24 @@ export default function Reservations() {
       setMessage("Please verify your email first.");
       return;
     }
-
     if (!form.name?.trim()) {
       setMessage("Please enter your full name.");
       return;
     }
-
     if (!form.date) {
       setMessage("Please select a reservation date.");
       return;
     }
-
     if (!form.time) {
       setMessage("Please select a time slot.");
       return;
     }
-
     if (!form.phone?.trim()) {
       setMessage("Please enter your phone number.");
       return;
     }
 
     const today = new Date().toISOString().split("T")[0];
-
     if (form.date < today) {
       setMessage("Reservations for past dates are not allowed.");
       return;
@@ -279,190 +268,241 @@ export default function Reservations() {
   /* ---------------- SLOT BUTTON UI ---------------- */
 
   const renderSlotButtons = () => {
+    return (
+      <div>
+        <p className="font-[Cinzel] text-[0.65rem] tracking-[0.3em] uppercase text-[#E3D5CA]/60 mb-3">
+          Choose a Time
+        </p>
+
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          {times.map((time) => {
+            const status = slotStatus[time] || "available";
+            const isSelected = form.time === time;
+            const isFull = status === "full";
+
+            return (
+              <button
+                key={time}
+                type="button"
+                disabled={isFull}
+                onClick={() => setForm({ ...form, time })}
+                className={`
+                  relative py-3 rounded-lg text-sm sm:text-base font-medium transition-all duration-200
+                  border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0a81e]
+                  ${isFull
+                    ? "!bg-[#241e1a] !text-white/25 border-transparent cursor-not-allowed line-through"
+                    : isSelected
+                      ? "!bg-[#f0a81e] !text-[#241400] border-[#f0a81e] shadow-[0_6px_18px_rgba(240,168,30,0.35)]"
+                      : "!bg-[#15110d] !text-[#E3D5CA] border-[#3D3530] hover:border-[#f0a81e]/60"}
+                `}
+              >
+                {time}
+                {status === "limited" && !isFull && (
+                  <span
+                    className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-yellow-400"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3 text-xs text-[#E3D5CA]/55">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#f0a81e]" /> Selected
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-yellow-400" /> Limited seats
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-white/25" /> Fully booked
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="mt-4 grid grid-cols-3 gap-4">
-
-      {times.map((time) => {
-
-        const status = slotStatus[time] || "available";
-
-        let bg = "!bg-green-700 hover:!bg-green-600";
-if (status === "limited") bg = "!bg-yellow-600 hover:!bg-yellow-500";
-if (status === "full") bg = "!bg-gray-700";
-        const selected =
-          form.time === time
-            ? "ring-2 ring-amber-400"
-            : "";
-
-        return (
-          <button
-            key={time}
-            type="button"
-            disabled={status === "full"}
-            onClick={() =>
-              setForm({ ...form, time })
-            }
-            className={`
-              py-4
-              rounded-lg
-              text-lg
-              transition
-              ${bg}
-              ${selected}
-            `}
-          >
-            {time}
-          </button>
-        );
-
-      })}
-
-    </div>
-  );
-};
-
-  return (
-
     <div
-      className="min-h-screen flex items-center justify-center pt-32"
-      style={{ background: "#1A1614", color: "#E3D5CA" }}
+      className="min-h-screen px-4 pb-16 flex items-start sm:items-center justify-center"
+      style={{
+        background:
+          "radial-gradient(90% 100% at 50% 0%, #241c14 0%, #15110d 65%)",
+        color: "#E3D5CA",
+        paddingTop: "calc(var(--navbar-height, 64px) + 2.5rem)",
+      }}
     >
 
       <div
-        className="p-10 rounded-xl w-[520px] shadow-xl"
+        className="w-full max-w-[560px] p-6 sm:p-10 rounded-2xl shadow-2xl"
         style={{
           background: "#201C19",
           border: "1px solid #3D3530"
         }}
       >
 
-        <h1 className="text-4xl text-center mb-8 font-serif">
-          Reserve Your Table
-        </h1>
-
-        
-
-        {/* STEP INDICATOR */}
-
-        <div className="flex justify-between mb-8 text-sm">
-
-          <span className={step >= 1 ? "font-semibold" : ""}>
-            1. Contact
-          </span>
-
-          <span className={step >= 2 ? "font-semibold" : ""}>
-            2. Verify
-          </span>
-
-          <span className={step >= 3 ? "font-semibold" : ""}>
-            3. Reservation
-          </span>
-
+        {/* Heading */}
+        <div className="text-center mb-8">
+          <p className="font-[Cinzel] text-[#f0a81e] text-[0.62rem] tracking-[0.45em] uppercase mb-3">
+            Since 1965
+          </p>
+          <h1 className="font-[Cinzel] text-3xl sm:text-4xl text-white">
+            Reserve Your Table
+          </h1>
         </div>
 
-        {/* STEP 1 */}
+        {/* STEP INDICATOR */}
+        <div className="flex items-center justify-between mb-9 px-1">
+          {steps.map((label, i) => {
+            const n = i + 1;
+            const isDone = step > n;
+            const isCurrent = step === n;
+            return (
+              <div key={label} className="flex items-center flex-1 last:flex-none">
+                <div className="flex flex-col items-center gap-1.5">
+                  <span
+                    className={`grid place-items-center w-8 h-8 rounded-full text-xs font-semibold border transition-colors
+                      ${isDone || isCurrent
+                        ? "bg-[#f0a81e] text-[#241400] border-[#f0a81e]"
+                        : "bg-transparent text-[#E3D5CA]/40 border-[#3D3530]"}`}
+                  >
+                    {isDone ? "✓" : n}
+                  </span>
+                  <span
+                    className={`font-[Cinzel] text-[0.6rem] tracking-[0.18em] uppercase whitespace-nowrap
+                      ${isCurrent ? "text-[#f0a81e]" : "text-[#E3D5CA]/45"}`}
+                  >
+                    {label}
+                  </span>
+                </div>
+                {n < steps.length && (
+                  <span
+                    className={`flex-1 h-px mx-2 sm:mx-3 -mt-5 ${
+                      isDone ? "bg-[#f0a81e]/70" : "bg-[#3D3530]"
+                    }`}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
 
+        {/* STEP 1 — CONTACT */}
         {step === 1 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendOTP();
+            }}
+            className="flex flex-col gap-4"
+          >
+            <input
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              autoComplete="name"
+              className={inputClass}
+            />
 
-  <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      sendOTP();
-    }}
-    className="flex flex-col gap-5"
-  >
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              required
+              onChange={handleChange}
+              autoComplete="email"
+              inputMode="email"
+              className={inputClass}
+            />
 
-    <input
-      name="name"
-      placeholder="Full Name"
-      value={form.name}
-      onChange={handleChange}
-      required
-      className="p-3 rounded bg-[#1A1614]"
-    />
+            <button
+              type="submit"
+              disabled={sendingOTP}
+              className="menu-cta mt-1 py-3.5 font-[Cinzel] font-semibold tracking-wider !rounded-full transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+            >
+              {sendingOTP ? "Sending…" : "Send Verification Code"}
+            </button>
 
-    <input
-      type="email"
-      name="email"
-      placeholder="Email"
-      value={form.email}
-      required
-      onChange={handleChange}
-      className="p-3 rounded bg-[#1A1614]"
-    />
+            <p className="text-xs text-center text-[#E3D5CA]/50 mt-1">
+              We&apos;ll email you a 6-digit code to confirm your booking.
+            </p>
+          </form>
+        )}
 
-    <button
-      type="submit"
-      disabled={sendingOTP}
-      className="py-2 border border-red-700 rounded disabled:opacity-50"
-    >
-      {sendingOTP ? "Sending..." : "Send OTP"}
-    </button>
-
-  </form>
-
-)}
-
-        {/* STEP 2 */}
-
+        {/* STEP 2 — VERIFY */}
         {step === 2 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              verifyOTP();
+            }}
+            className="flex flex-col gap-4"
+          >
+            <p className="text-sm text-center text-[#E3D5CA]/70">
+              Enter the code sent to{" "}
+              <span className="text-[#f0a81e] break-all">{form.email}</span>
+            </p>
 
-  <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      verifyOTP();
-    }}
-    className="flex flex-col gap-5"
-  >
+            <input
+              ref={otpInputRef}
+              value={otp}
+              maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="• • • • • •"
+              className={`${inputClass} text-center text-2xl tracking-[0.5em] font-[Cinzel]`}
+            />
 
-    <input
-  ref={otpInputRef}
-  value={otp}
-  maxLength={6}
-  inputMode="numeric"
-  onChange={(e) => setOtp(e.target.value)}
-  placeholder="Enter OTP"
-  className="p-3 rounded bg-[#1A1614]"
-/>
+            <button
+              type="submit"
+              className="menu-cta py-3.5 font-[Cinzel] font-semibold tracking-wider !rounded-full transition-all duration-200 hover:-translate-y-0.5"
+            >
+              Verify Code
+            </button>
 
-    <button
-      type="submit"
-      className="py-2 bg-red-700 rounded"
-    >
-      Verify OTP
-    </button>
+            <button
+              type="button"
+              onClick={sendOTP}
+              disabled={sendingOTP}
+              className="!bg-transparent !p-0 text-xs text-[#E3D5CA]/55 hover:text-[#f0a81e] transition underline underline-offset-4 disabled:opacity-50"
+            >
+              {sendingOTP ? "Resending…" : "Resend code"}
+            </button>
+          </form>
+        )}
 
-  </form>
-
-)}
-
-        {/* STEP 3 */}
-
+        {/* STEP 3 — RESERVATION */}
         {step === 3 && (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-  <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone Number"
+              pattern="[0-9]{10}"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              autoComplete="tel"
+              inputMode="tel"
+              className={inputClass}
+            />
 
-    <input
-  type="tel"
-  name="phone"
-  placeholder="Phone Number"
-  pattern="[0-9]{10}"
-  value={form.phone}
-  onChange={handleChange}
-  required
-  className="p-3 rounded bg-[#1A1614]"
-/>
-
-    <input
-  type="date"
-  name="date"
-  value={form.date}
-  min={new Date().toISOString().split("T")[0]}
-  onChange={handleChange}
-  required
-  className="p-3 rounded bg-[#1A1614]"
-/>
+            <input
+              type="date"
+              name="date"
+              value={form.date}
+              min={new Date().toISOString().split("T")[0]}
+              onChange={handleChange}
+              required
+              className={inputClass}
+            />
 
             {form.date && renderSlotButtons()}
 
@@ -470,56 +510,54 @@ if (status === "full") bg = "!bg-gray-700";
               name="guests"
               value={form.guests}
               onChange={handleChange}
-              className="p-3 rounded bg-[#1A1614]"
+              className={inputClass}
             >
-
-              <option value="1">1 Guest</option>
-              <option value="2">2 Guests</option>
-              <option value="3">3 Guests</option>
-              <option value="4">4 Guests</option>
-              <option value="5">5 Guests</option>
-              <option value="6">6 Guests</option>
-              <option value="7">7 Guests</option>
-              <option value="8">8 Guests</option>
-              <option value="9">9 Guests</option>
-              <option value="10">10 Guests</option>
-              <option value="11">11 Guests</option>
-              <option value="12">12 Guests</option>
-              <option value="13">13 Guests</option>
-              <option value="14">14 Guests</option>
-
+              {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n} {n === 1 ? "Guest" : "Guests"}
+                </option>
+              ))}
             </select>
 
             <textarea
               name="dietary"
-              placeholder="Dietary Preferences"
+              placeholder="Dietary preferences (optional)"
               value={form.dietary}
               onChange={handleChange}
-              className="p-3 rounded bg-[#1A1614]"
+              rows={3}
+              className={inputClass}
             />
 
             <button
               type="submit"
               disabled={submitting}
-              className="py-3 bg-red-700 rounded disabled:opacity-50"
+              className="menu-cta py-4 font-[Cinzel] font-semibold tracking-wider !rounded-full transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
             >
-              {submitting ? "Confirming..." : "Confirm Reservation"}
+              {submitting ? "Confirming…" : "Confirm Reservation"}
             </button>
-
           </form>
-
         )}
 
         {message && (
-          <p className="mt-4 text-center text-yellow-400">
-            {message}
+          <p
+            className="mt-5 text-center text-sm rounded-lg px-4 py-3"
+            style={{
+              background: "rgba(240,168,30,0.08)",
+              border: "1px solid rgba(240,168,30,0.3)",
+              color: "#f0c462",
+            }}
+          >
+            <span>{message}</span>
           </p>
         )}
 
+        <p className="mt-7 text-center text-xs text-[#E3D5CA]/45">
+          Prefer to call?{" "}
+          <a href="tel:+919986011112" className="text-[#f0a81e] hover:underline">
+            +91 99860 11112
+          </a>
+        </p>
       </div>
-
     </div>
-
   );
-
 }
