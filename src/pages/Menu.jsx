@@ -313,10 +313,14 @@ export default function Menu() {
     return () => observer.disconnect();
   }, []);
 
-  // ── Blur food image while scrolling up ──
+  // ── Blur food image while scrolling up (desktop only) ──
   useEffect(() => {
     let lastY = window.scrollY;
     const onScroll = () => {
+      if (window.innerWidth < 768) {
+        setBlur(0);
+        return;
+      }
       const y = window.scrollY;
       setBlur(y < lastY ? Math.min(8, (lastY - y) / 10) : 0);
       lastY = y;
@@ -482,7 +486,7 @@ export default function Menu() {
         </div>
 
         {/* LAYER 2: Food image — enters from below, covers Layer 1, stays sticky */}
-        <div className="relative h-[200vh] z-20 bg-[#15110d]">
+        <div className="relative h-[200vh] z-20 md:bg-[#15110d] bg-transparent">
           <div className="sticky top-0 h-screen flex items-center justify-center px-4">
             {currentCategory.image ? (
               <img
@@ -492,7 +496,7 @@ export default function Menu() {
                   filter: `blur(${blur}px)`,
                   transition: "filter 0.2s ease-out",
                 }}
-                className="w-full md:w-[90%] max-w-6xl rounded-2xl shadow-2xl object-cover max-h-[70vh] md:max-h-[80vh]"
+                className="w-full md:w-[90%] max-w-6xl rounded-2xl shadow-2xl object-cover max-h-[70vh] md:max-h-[80vh] max-md:!filter-none"
               />
             ) : (
               <div className="w-full md:w-[90%] max-w-6xl h-[50vh] md:h-[60vh] rounded-2xl bg-[#1e1610] border border-[#3D3530] flex items-center justify-center">
